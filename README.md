@@ -1,2 +1,2 @@
 # BinaryTreeAVL
-Binary search tree with AVL (Self balancing) to ensure the height of O(Log n)
+Binary search tree with AVL (Self balancing) to ensure the search speed of O(Log n)
