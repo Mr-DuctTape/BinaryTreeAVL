@@ -17,51 +17,6 @@ Node* Node::Get_MinNode(Node* node)
 	return Get_MinNode(node->left);
 }
 
-void Node::Add(Node* node, int nodeValue)
-{
-	if (node == nullptr)
-		return;
-
-	if (node->value < nodeValue)
-	{
-		//Right side
-		if (node->right == nullptr)
-		{
-			node->right = new Node(nodeValue, node, nullptr, nullptr);
-			UpdateNode(node->right);
-			std::cout << "Right node: " << node->right->value << " of node: " << node->right->parent->value << "\n";
-			return;
-		}
-		else
-		{
-			Add(node->right, nodeValue);
-			return;
-		}
-	}
-	else if (node->value == nodeValue)
-	{
-		std::cout << "Value already in binary tree!\n";
-		return;
-	}
-	else
-	{
-		//Left side
-		if (node->left == nullptr)
-		{
-			Node* parent = node;
-			node->left = new Node(nodeValue, parent, nullptr, nullptr);
-			UpdateNode(node->left);
-			std::cout << "Left node: " << node->left->value << " of node: " << node->left->parent->value << "\n";
-			return;
-		}
-		else
-		{
-			Add(node->left, nodeValue);
-			return;
-		}
-	}
-}
-
 void Node::Remove(Node* node, int nodeValue)
 {
 	if (node == nullptr)
@@ -167,7 +122,7 @@ void Node::Remove(Node* node, int nodeValue)
 			}
 		}
 	}
-	else if(node->left == nullptr && node->right == nullptr)
+	else if (node->left == nullptr && node->right == nullptr)
 	{
 		std::cout << "Zero child\n";
 		//No children
@@ -186,28 +141,28 @@ void Node::Remove(Node* node, int nodeValue)
 
 Node* Node::Search(Node* node, int nodeValue)
 {
-	if (node == nullptr) return nullptr;
+	if (node == nullptr)
+		return nullptr;
 
 	if (node->value < nodeValue)
-	{
 		return Search(node->right, nodeValue);
-	}
-	else if(node->value > nodeValue)
-	{
+	if (node->value > nodeValue)
 		return Search(node->left, nodeValue);
-	}
-	else
-	{
-		return node;
-	}
+	
+	return node;
 }
 
-size_t Node::Get_NodeHeight(Node* node)
+int Node::Get_NodeHeight(Node* node)
 {
 	if (node == nullptr)
-		return 0;
-	else
-		return 1 + std::max(Get_NodeHeight(node->left), Get_NodeHeight(node->right));
+		return -1;
+
+	int leftHeight = Get_NodeHeight(node->left);
+	int rightHeight = Get_NodeHeight(node->right);
+
+	node->nodeHeight = (leftHeight > rightHeight) ? (leftHeight) : (rightHeight) + 1;
+
+	return node->nodeHeight;
 }
 
 int Node::Get_NodeBalance(Node* node)
@@ -217,17 +172,19 @@ int Node::Get_NodeBalance(Node* node)
 
 	if (node->left && node->right)
 	{
-		node->nodeBalance = Get_NodeHeight(node->left) - Get_NodeHeight(node->right);
+		node->nodeBalance = (node->left->nodeHeight - node->right->nodeHeight);
 	}
-	else if (node->left || node->right)
+	else if (!node->left && node->right)
 	{
-		node->nodeBalance = 1;
-		return node->nodeBalance;
+		node->nodeBalance = (-1 - node->right->nodeHeight);
+	}
+	else if (node->left && !node->right)
+	{
+		node->nodeBalance = (node->left->nodeHeight - -1);
 	}
 	else
 	{
-		node->nodeBalance = 0;
-		return node->nodeBalance;
+		node->nodeBalance = -1 - -1;
 	}
 
 	return node->nodeBalance;
@@ -238,8 +195,10 @@ int Node::Get_NodeBalance(Node* node)
 Node* Node::RotateLeft(Node* unbalancedNode)
 {
 	Node* pivotNode = unbalancedNode->right;
+
 	if (pivotNode == nullptr)
 		return unbalancedNode;
+
 	Node* pivotNodeChild = pivotNode->left;
 
 	//Make rotation
@@ -269,6 +228,11 @@ Node* Node::RotateLeft(Node* unbalancedNode)
 			parent->right = pivotNode;
 		}
 	}
+	else if (unbalancedNode->parent == nullptr)
+	{
+		pivotNode->parent = nullptr;
+	}
+
 	unbalancedNode->parent = pivotNode;
 
 	return pivotNode;
@@ -277,8 +241,10 @@ Node* Node::RotateLeft(Node* unbalancedNode)
 Node* Node::RotateRight(Node* unbalancedNode)
 {
 	Node* pivotNode = unbalancedNode->left;
+
 	if (pivotNode == nullptr)
 		return unbalancedNode;
+
 	Node* pivotNodeChild = pivotNode->right;
 
 	if (pivotNode == nullptr)
@@ -312,6 +278,11 @@ Node* Node::RotateRight(Node* unbalancedNode)
 			parent->right = pivotNode;
 		}
 	}
+	else if (unbalancedNode->parent == nullptr)
+	{
+		pivotNode->parent = nullptr;
+	}
+
 	unbalancedNode->parent = pivotNode;
 
 	return pivotNode;
@@ -320,49 +291,39 @@ Node* Node::RotateRight(Node* unbalancedNode)
 
 //Update node balance and height,
 
-void Node::UpdateNode(Node* node)
+Node* Node::UpdateNode(Node* node)
 {
-	if (node == nullptr) return;
+	if (node == nullptr)
+		return nullptr;
 
-	UpdateHeight(node);
-	UpdateBalance(node);
+	node->nodeHeight = Get_NodeHeight(node);
+	node->nodeBalance = Get_NodeBalance(node);
+
 
 	if (node->nodeBalance > 1)
 	{
 		if (node->left != nullptr && node->left->nodeBalance < 0)
 		{
-			node = RotateLeft(node->left);
+			node->left = RotateLeft(node->left);
 		}
+
 		node = RotateRight(node);
 	}
-	else if (node->nodeBalance < -1)
+
+	if (node->nodeBalance < -1)
 	{
 		if (node->right != nullptr && node->right->nodeBalance > 0)
 		{
-			node = RotateRight(node->right);
+			node->right = RotateRight(node->right);
 		}
+
 		node = RotateLeft(node);
 	}
-}
-
-void Node::UpdateBalance(Node* node)
-{
-	if (node == nullptr) return;
-
-	UpdateBalance(node->left);
-	UpdateBalance(node->right);
-
-	node->nodeBalance = Get_NodeBalance(node);
-}
-
-void Node::UpdateHeight(Node* node)
-{
-	if (node == nullptr) return;
-
-	UpdateHeight(node->left);
-	UpdateHeight(node->right);
 
 	node->nodeHeight = Get_NodeHeight(node);
+	node->nodeBalance = Get_NodeBalance(node);
+
+	return node;
 }
 
 
@@ -378,14 +339,66 @@ void BinaryTreeAVL::deallocateMemory(Node* root)
 	delete root;
 }
 
-void BinaryTreeAVL::AddNode(int nodeValue)
+void BinaryTreeAVL::Insert(int nodeValue)
 {
-	root->Add(root, nodeValue);
-	root->UpdateNode(root);
+	if (!root)
+	{
+		root = new Node(nodeValue, nullptr, nullptr, nullptr);
+		return;
+	}
+
+	Node* node = root;
+
+	while (true)
+	{
+		if (nodeValue == node->value)
+		{
+			return;
+		}
+
+		if (node->value > nodeValue)
+		{
+			//Left side
+			if (!node->left)
+			{
+				node->left = new Node(nodeValue, node, nullptr, nullptr);
+				node = node->left;
+				break;
+			}
+			node = node->left;
+		}
+		else if (node->value < nodeValue)
+		{
+			//Right side
+			if (!node->right)
+			{
+				node->right = new Node(nodeValue, node, nullptr, nullptr);
+				node = node->right;
+				break;
+			}
+			node = node->right;
+		}
+	}
+
+	while (node != nullptr)
+	{
+		// Update or rebalance this node and its subtree.
+		Node* updated = node->UpdateNode(node);
+
+		// If this subtree root has no parent, it's the overall root.
+		if (updated->parent == nullptr)
+			root = updated;
+
+		// Move upward: parent may have changed due to rotation,
+		// so always use updated->parent, not the old saved parent.
+		node = updated->parent;
+	}
+
+	numberOfNodes++;
+
 }
 
 void BinaryTreeAVL::DeleteNode(int nodeValue)
 {
 	root->Remove(root, nodeValue);
 }
-

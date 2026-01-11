@@ -3,10 +3,10 @@
 
 struct Node
 {
-	size_t value{};
-	size_t nodeBalance{};
-	size_t indexNumber{};
-	size_t nodeHeight{};
+	int value{};
+	int nodeBalance{};
+	int indexNumber{};
+	int nodeHeight{};
 
 	Node* left{};
 	Node* right{};
@@ -22,11 +22,10 @@ struct Node
 
 	//Getters
 	Node* Get_MinNode(Node* node);
-	size_t Get_NodeHeight(Node* node);
+	int Get_NodeHeight(Node* node);
 	int Get_NodeBalance(Node* node);
 
 	//Insertion, searching and deletion
-	void Add(Node* node, int nodeValue);
 	void Remove(Node* node, int nodeValue);
 	Node* Search(Node* node, int nodeValue);
 
@@ -35,27 +34,27 @@ struct Node
 	Node* RotateLeft(Node* y);
 
 	//Updates
-	void UpdateHeight(Node* node);
-	void UpdateBalance(Node* node);
-	void UpdateNode(Node* node);
+	Node* UpdateNode(Node* node);
 };
 
 class BinaryTreeAVL
 {
 private:
-	Node* root = nullptr;
 	void deallocateMemory(Node* root);
+protected:
+	Node* root = nullptr;
 public:
 	size_t numberOfNodes = 0;
-
-	BinaryTreeAVL() = default;
 
 	BinaryTreeAVL(int rootValue)
 	{
 		root = new Node(rootValue, nullptr, nullptr, nullptr);
 	}
+
+
 	//Add node
-	void AddNode(int nodeValue);
+	void Insert(int nodeValue);
+
 	//Delete node
 	void DeleteNode(int nodeValue);
 
@@ -73,7 +72,9 @@ public:
 
 	Node* operator [](int nodeValue)
 	{
-		return root->Search(root, nodeValue);
+		Node* result = root->Search(root, nodeValue);
+
+		return result;
 	}
 
 	//Free memory
@@ -82,4 +83,3 @@ public:
 		deallocateMemory(root);
 	}
 };
-
